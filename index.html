@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HeritEon | Native Code Formatter</title>
+    <style>
+        /* --- HERITEON BRAND COLORS --- */
+        :root {
+            /*  Tamno Plava (iz headera sajta) */
+            --brand-navy: #0a192f;
+            /*  Narandžasta (iz dugmića) */
+            --brand-orange: #ff6b35; 
+            /* Hover nijansa */
+            --brand-orange-hover: #e85a25;
+            
+            --bg-color: #f4f7f6;       /* Clean light grey background */
+            --panel-bg: #ffffff;       /* White panels */
+            --text-main: #333333;
+            --border-color: #e0e0e0;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        /* --- HEADER (HeritEon Style) --- */
+        header {
+            background: var(--brand-navy);
+            color: white;
+            padding: 0 25px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+       
+        .brand span { color: white; }
+        .brand .accent { color: var(--brand-orange); }
+
+        .app-title {
+            font-size: 13px;
+            opacity: 0.7;
+            border-left: 1px solid rgba(255,255,255,0.3);
+            padding-left: 15px;
+            margin-left: 15px;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+
+        /* --- TOOLBAR --- */
+        .toolbar { 
+            background: var(--panel-bg); 
+            padding: 15px 25px; 
+            border-bottom: 1px solid var(--border-color);
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+        }
+
+        /* INPUTS */
+        select { 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            border: 1px solid #ccc; 
+            font-size: 14px;
+            background: #fff;
+            color: #333;
+            outline: none;
+            cursor: pointer;
+        }
+        select:focus { border-color: var(--brand-orange); }
+
+        /* BUTTONS */
+        button { 
+            padding: 8px 18px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        /* Primary Button (Orange) */
+        .btn-primary {
+            background: var(--brand-orange);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--brand-orange-hover); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+
+        /* Secondary Button (Outline) */
+        .btn-secondary {
+            background: white;
+            color: #555;
+            border: 1px solid #ccc;
+        }
+        .btn-secondary:hover { background: #f5f5f5; color: #333; }
+
+        /* SVG Icons */
+        .icon { width: 18px; height: 18px; fill: currentColor; }
+
+        /* --- WORKSPACE --- */
+        .workspace { 
+            display: flex; 
+            flex: 1; 
+            padding: 20px; 
+            gap: 20px; 
+            overflow: hidden; 
+        }
+
+        .editor-box { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            background: var(--panel-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .box-header {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        textarea { 
+            flex: 1; 
+            border: none; 
+            padding: 15px; 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            font-size: 13px; 
+            resize: none; 
+            outline: none; 
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+        
+        /* FOOTER */
+        footer {
+            background: var(--brand-navy);
+            color: rgba(255,255,255,0.6);
+            padding: 8px 25px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        footer strong { color: white; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <span>Herit<span class="accent">Eon</span></span>
+            <span class="app-title">Chrome Native Formatter</span>
+        </div>
+        <div id="status" style="font-size: 12px; font-weight: 500;">Ready</div>
+    </header>
+
+    <div class="toolbar">
+        <select id="typeSelector">
+            <option value="text/javascript">JavaScript</option>
+            <option value="text/html">HTML</option>
+            <option value="text/css">CSS</option>
+        </select>
+
+        <select id="indentSelector">
+            <option value="    ">4 Spaces</option>
+            <option value="  ">2 Spaces</option>
+            <option value="	">Tab</option>
+        </select>
+
+        <button id="btnFormat" class="btn-primary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M7.5 5.6L10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5L21 17l-2.5 1.4L17 21l-1.4-2.5L13 17l2.5-1.4zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5zm-8.8 3.8L11.9 2 10 5.8 2 11.9l8 1.9L11.9 22 14 14.1l8-1.9z"/></svg>
+            Beautify
+        </button>
+
+        <div style="flex: 1;"></div>
+
+        <button onclick="copyOutput()" class="btn-secondary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            Copy
+        </button>
+
+        <button onclick="downloadOutput()" class="btn-secondary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+            Download
+        </button>
+    </div>
+
+    <div class="workspace">
+        <div class="editor-box">
+            <div class="box-header">Source Code</div>
+            <textarea id="source" spellcheck="false" placeholder="// Paste your code here..."></textarea>
+        </div>
+
+        <div class="editor-box">
+            <div class="box-header">
+                Formatted Output
+                <span style="font-size: 10px; opacity: 0.6;">CHROMIUM ENGINE</span>
+            </div>
+            <textarea id="output" spellcheck="false" readonly></textarea>
+        </div>
+    </div>
+
+    <footer>
+        <div>UI & Concept &copy; 2026 <strong>HeritEon</strong></div>
+        <div>Engine provided by <strong>The Chromium Project</strong> (BSD License)</div>
+    </footer>
+
+    <script type="module">
+        import { FormatterWorker } from './devtools/bundled/entrypoints/formatter_worker/formatter_worker.js';
+
+        const btn = document.getElementById('btnFormat');
+        const status = document.getElementById('status');
+
+        // --- FORMATIRANJE ---
+        btn.addEventListener('click', () => {
+            const source = document.getElementById('source').value;
+            const mimeType = document.getElementById('typeSelector').value;
+            const indent = document.getElementById('indentSelector').value;
+            const output = document.getElementById('output');
+            
+            if (!source.trim()) {
+                status.innerText = "Please paste code first";
+                return;
+            }
+
+            status.innerText = "Processing...";
+            status.style.color = "#ff6b35"; // Orange status
+            
+            try {
+                // Pozivamo Chrome Engine
+                const result = FormatterWorker.format(mimeType, source, indent);
+                
+                const handleResult = (res) => {
+                     // Chrome vraca { mapping, content } ili samo string, zavisno od verzije
+                    output.value = res.content ? res.content : res;
+                    status.innerText = "Done";
+                    status.style.color = "#4caf50"; // Green
+                };
+
+                if (result instanceof Promise) {
+                    result.then(handleResult).catch(err => {
+                        console.error(err);
+                        output.value = "Error: " + err;
+                    });
+                } else {
+                    handleResult(result);
+                }
+
+            } catch (e) {
+                console.error("Critical Error:", e);
+                output.value = "Engine Error: " + e.message;
+            }
+        });
+
+        // --- EXPORT GLOBALNIH FUNKCIJA (jer je script type="module") ---
+        
+        window.copyOutput = function() {
+            const output = document.getElementById('output');
+            if(!output.value) return;
+            output.select();
+            document.execCommand('copy');
+            status.innerText = "Copied to Clipboard!";
+            setTimeout(() => status.innerText = "Ready", 2000);
+        };
+
+        window.downloadOutput = function() {
+            const content = document.getElementById('output').value;
+            const type = document.getElementById('typeSelector').value;
+            if(!content) return;
+
+            let ext = "txt";
+            if(type.includes("javascript")) ext = "js";
+            if(type.includes("html")) ext = "html";
+            if(type.includes("css")) ext = "css";
+
+            const blob = new Blob([content], { type: "text/plain" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `formatted_${Date.now()}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        };
+    </script>
+</body>
+</html>
