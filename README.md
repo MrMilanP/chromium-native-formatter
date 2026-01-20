@@ -27,6 +27,7 @@ Most formatters either depend on a Node.js toolchain or send code through online
 - **Indentation:** 2 spaces / 4 spaces / Tabs  
 - **Syntax Highlighting:** Prism.js (source + output)
 - **JS Validation:** Acorn parse check before formatting (clear error feedback)
+- **Minified Bundles:** handles large/minified vendor bundles (DevTools-grade formatter)
 - **Copy / Download:** one-click copy to clipboard + download formatted file
 - **Offline Modules:** runs from local files using a robust launcher script
 
@@ -66,6 +67,13 @@ Most formatters either depend on a Node.js toolchain or send code through online
 
 ---
 
+## Known limitations
+
+- This is a **Chromium-module-based** tool, so running via the launcher is required (local file import restrictions).
+- When formatting **HTML**, `<script src="...">` and `<script type="module">` blocks are intentionally not modified by post-fixes.
+
+---
+
 ## License & Attribution
 
 This project is a composite work:
@@ -75,9 +83,7 @@ HTML/CSS/JS glue + launcher logic created by **HeritEon**.
 Copyright © 2026 HeritEon.
 
 ### 2) Formatting Engine
-The formatting logic under `devtools/bundled/...` is extracted from **The Chromium Project** and is licensed under **BSD-3-Clause**.  
-- Source: [Chromium](https://www.chromium.org/Home)  
-- License: [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
+The formatting logic under `devtools/bundled/...` is extracted from **The Chromium Project** and is licensed under **BSD-3-Clause**.
 
 ### 3) Prism.js and Acorn
 This repository includes Prism.js and Acorn for offline highlighting and validation.  
