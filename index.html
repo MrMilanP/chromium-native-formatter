@@ -1,322 +1,658 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>HeritEon | Native Code Formatter</title>
-    <style>
-        /* --- HERITEON BRAND COLORS --- */
-        :root {
-            /*  Tamno Plava (iz headera sajta) */
-            --brand-navy: #0a192f;
-            /*  Narandžasta (iz dugmića) */
-            --brand-orange: #ff6b35; 
-            /* Hover nijansa */
-            --brand-orange-hover: #e85a25;
-            
-            --bg-color: #f4f7f6;       /* Clean light grey background */
-            --panel-bg: #ffffff;       /* White panels */
-            --text-main: #333333;
-            --border-color: #e0e0e0;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; 
-            background: var(--bg-color); 
-            color: var(--text-main); 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden;
-        }
-
-        /* --- HEADER (HeritEon Style) --- */
-        header {
-            background: var(--brand-navy);
-            color: white;
-            padding: 0 25px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-       
-        .brand span { color: white; }
-        .brand .accent { color: var(--brand-orange); }
-
-        .app-title {
-            font-size: 13px;
-            opacity: 0.7;
-            border-left: 1px solid rgba(255,255,255,0.3);
-            padding-left: 15px;
-            margin-left: 15px;
-            font-weight: 400;
-            text-transform: uppercase;
-        }
-
-        /* --- TOOLBAR --- */
-        .toolbar { 
-            background: var(--panel-bg); 
-            padding: 15px 25px; 
-            border-bottom: 1px solid var(--border-color);
-            display: flex; 
-            gap: 15px; 
-            align-items: center; 
-        }
-
-        /* INPUTS */
-        select { 
-            padding: 8px 12px; 
-            border-radius: 4px; 
-            border: 1px solid #ccc; 
-            font-size: 14px;
-            background: #fff;
-            color: #333;
-            outline: none;
-            cursor: pointer;
-        }
-        select:focus { border-color: var(--brand-orange); }
-
-        /* BUTTONS */
-        button { 
-            padding: 8px 18px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            text-transform: uppercase;
-        }
-
-        /* Primary Button (Orange) */
-        .btn-primary {
-            background: var(--brand-orange);
-            color: white;
-        }
-        .btn-primary:hover { background: var(--brand-orange-hover); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-
-        /* Secondary Button (Outline) */
-        .btn-secondary {
-            background: white;
-            color: #555;
-            border: 1px solid #ccc;
-        }
-        .btn-secondary:hover { background: #f5f5f5; color: #333; }
-
-        /* SVG Icons */
-        .icon { width: 18px; height: 18px; fill: currentColor; }
-
-        /* --- WORKSPACE --- */
-        .workspace { 
-            display: flex; 
-            flex: 1; 
-            padding: 20px; 
-            gap: 20px; 
-            overflow: hidden; 
-        }
-
-        .editor-box { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            background: var(--panel-bg);
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .box-header {
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 12px;
-            font-weight: 700;
-            color: #555;
-            text-transform: uppercase;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        textarea { 
-            flex: 1; 
-            border: none; 
-            padding: 15px; 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            font-size: 13px; 
-            resize: none; 
-            outline: none; 
-            color: #2c3e50;
-            line-height: 1.5;
-        }
-        
-        /* FOOTER */
-        footer {
-            background: var(--brand-navy);
-            color: rgba(255,255,255,0.6);
-            padding: 8px 25px;
-            font-size: 11px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        footer strong { color: white; }
-    </style>
-</head>
-<body>
-
-    <header>
-        <div class="brand">
-            <span>Herit<span class="accent">Eon</span></span>
-            <span class="app-title">Chrome Native Formatter</span>
-        </div>
-        <div id="status" style="font-size: 12px; font-weight: 500;">Ready</div>
-    </header>
-
-    <div class="toolbar">
-        <select id="typeSelector">
-            <option value="text/javascript">JavaScript</option>
-            <option value="text/html">HTML</option>
-            <option value="text/css">CSS</option>
-        </select>
-
-        <select id="indentSelector">
-            <option value="    ">4 Spaces</option>
-            <option value="  ">2 Spaces</option>
-            <option value="	">Tab</option>
-        </select>
-
-        <button id="btnFormat" class="btn-primary">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M7.5 5.6L10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5L21 17l-2.5 1.4L17 21l-1.4-2.5L13 17l2.5-1.4zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5zm-8.8 3.8L11.9 2 10 5.8 2 11.9l8 1.9L11.9 22 14 14.1l8-1.9z"/></svg>
-            Beautify
-        </button>
-
-        <div style="flex: 1;"></div>
-
-        <button onclick="copyOutput()" class="btn-secondary">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            Copy
-        </button>
-
-        <button onclick="downloadOutput()" class="btn-secondary">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
-            Download
-        </button>
-    </div>
-
-    <div class="workspace">
-        <div class="editor-box">
-            <div class="box-header">Source Code</div>
-            <textarea id="source" spellcheck="false" placeholder="// Paste your code here..."></textarea>
-        </div>
-
-        <div class="editor-box">
-            <div class="box-header">
-                Formatted Output
-                <span style="font-size: 10px; opacity: 0.6;">CHROMIUM ENGINE</span>
-            </div>
-            <textarea id="output" spellcheck="false" readonly></textarea>
-        </div>
-    </div>
-
-    <footer>
-        <div>UI & Concept &copy; 2026 <strong>HeritEon</strong></div>
-        <div>Engine provided by <strong>The Chromium Project</strong> (BSD License)</div>
-    </footer>
-
-    <script type="module">
-        import { FormatterWorker } from './devtools/bundled/entrypoints/formatter_worker/formatter_worker.js';
-
-        const btn = document.getElementById('btnFormat');
-        const status = document.getElementById('status');
-
-        // --- FORMATIRANJE ---
-        btn.addEventListener('click', () => {
-            const source = document.getElementById('source').value;
-            const mimeType = document.getElementById('typeSelector').value;
-            const indent = document.getElementById('indentSelector').value;
-            const output = document.getElementById('output');
-            
-            if (!source.trim()) {
-                status.innerText = "Please paste code first";
-                return;
+    <head>
+        <meta charset="UTF-8">
+        <title>HeritEon | Native Code Formatter</title>
+        <link rel="stylesheet" href="./prism/prism.css">
+        <style>
+            code[class*="language-"], pre[class*="language-"] {
+                text-shadow: none !important;
+            }
+        </style>
+        <style>
+            :root {
+                --brand-navy: #0a192f;
+                --brand-orange: #ff6b35;
+                --brand-orange-hover: #e85a25;
+                --bg-color: #f4f7f6;
+                --panel-bg: #ffffff;
+                --text-main: #333333;
+                --border-color: #e0e0e0;
             }
 
-            status.innerText = "Processing...";
-            status.style.color = "#ff6b35"; // Orange status
-            
-            try {
-                // Pozivamo Chrome Engine
-                const result = FormatterWorker.format(mimeType, source, indent);
-                
-                const handleResult = (res) => {
-                     // Chrome vraca { mapping, content } ili samo string, zavisno od verzije
-                    output.value = res.content ? res.content : res;
-                    status.innerText = "Done";
-                    status.style.color = "#4caf50"; // Green
-                };
+            body {
+                font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+                background: var(--bg-color);
+                color: var(--text-main);
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
 
-                if (result instanceof Promise) {
-                    result.then(handleResult).catch(err => {
-                        console.error(err);
-                        output.value = "Error: " + err;
-                    });
-                } else {
-                    handleResult(result);
+            header {
+                background: var(--brand-navy);
+                color: white;
+                padding: 0 25px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                z-index: 10;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+
+            .brand span {
+                color: white;
+            }
+
+            .brand .accent {
+                color: var(--brand-orange);
+            }
+
+            .app-title {
+                font-size: 13px;
+                opacity: 0.7;
+                border-left: 1px solid rgba(255,255,255,0.3);
+                padding-left: 15px;
+                margin-left: 15px;
+                font-weight: 400;
+                text-transform: uppercase;
+            }
+
+            .toolbar {
+                background: var(--panel-bg);
+                padding: 15px 25px;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                gap: 15px;
+                align-items: center;
+            }
+
+            select {
+                padding: 8px 12px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+                background: #fff;
+                color: #333;
+                outline: none;
+                cursor: pointer;
+            }
+
+            select:focus {
+                border-color: var(--brand-orange);
+            }
+
+            button {
+                padding: 8px 18px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+                text-transform: uppercase;
+            }
+
+            .btn-primary {
+                background: var(--brand-orange);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: var(--brand-orange-hover);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            }
+
+            .btn-secondary {
+                background: white;
+                color: #555;
+                border: 1px solid #ccc;
+            }
+
+            .btn-secondary:hover {
+                background: #f5f5f5;
+                color: #333;
+            }
+
+            .icon {
+                width: 18px;
+                height: 18px;
+                fill: currentColor;
+            }
+
+            .workspace {
+                display: flex;
+                flex: 1;
+                padding: 20px;
+                gap: 20px;
+                overflow: hidden;
+            }
+
+            .editor-box {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background: var(--panel-bg);
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                overflow: hidden;
+            }
+
+            .box-header {
+                padding: 10px 15px;
+                background: #f8f9fa;
+                border-bottom: 1px solid var(--border-color);
+                font-size: 12px;
+                font-weight: 700;
+                color: #555;
+                text-transform: uppercase;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .code-editor {
+                position: relative;
+                flex: 1;
+                font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                font-size: 13px;
+                background: #fcfcfc42;
+            }
+
+            .code-editor textarea {
+                position: absolute;
+                inset: 0;
+                padding: 15px;
+                border: none;
+                resize: none;
+                outline: none;
+                background: transparent;
+                color: rgba(0, 0, 0, 0.03);
+                caret-color: #000000;
+                line-height: 1.5;
+                z-index: 2;
+                white-space: pre;
+                overflow: auto;
+            }
+
+            .code-editor pre.code-overlay {
+                position: absolute;
+                inset: 0;
+                margin: 0;
+                padding: 15px;
+                overflow: auto;
+                background: #dee5f542;
+                color: #000;
+                z-index: 1;
+                pointer-events: none;
+                border: none;
+            }
+
+            .code-editor pre.code-overlay code {
+                font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                font-size: 13px;
+            }
+
+            pre.code-output {
+                flex: 1;
+                margin: 0;
+                padding: 15px;
+                overflow: auto;
+                background: #dee5f542;
+                color: #000;
+                border: none;
+            }
+
+            pre.code-output code {
+                font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                font-size: 13px;
+            }
+
+            footer {
+                background: var(--brand-navy);
+                color: rgba(255,255,255,0.6);
+                padding: 8px 25px;
+                font-size: 11px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            footer strong {
+                color: white;
+            }
+
+            /* Fake placeholder (ne pomera se) */
+            .code-placeholder {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                right: 15px;
+                z-index: 3;
+                pointer-events: none;
+                color: #888;
+                font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                font-size: 13px;
+                line-height: 1.5;
+                white-space: pre;
+            }
+
+            .code-editor textarea::placeholder {
+                color: transparent;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="brand">
+                <span>
+                    Herit<span class="accent">Eon</span>
+                </span>
+                <span class="app-title">Chrome Native Formatter</span>
+            </div>
+            <div id="status" style="font-size: 12px; font-weight: 500;">Ready</div>
+        </header>
+        <div class="toolbar">
+            <select id="typeSelector">
+                <option value="text/plain">JavaScript</option>
+                <option value="text/html">HTML</option>
+                <option value="text/css">CSS</option>
+            </select>
+            <select id="indentSelector">
+                <option value="    ">4 Spaces</option>
+                <option value="  ">2 Spaces</option>
+                <option value="	">Tab</option>
+            </select>
+            <button id="btnFormat" class="btn-primary">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M7.5 5.6L10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5L21 17l-2.5 1.4L17 21l-1.4-2.5L13 17l2.5-1.4zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5zm-8.8 3.8L11.9 2 10 5.8 2 11.9l8 1.9L11.9 22 14 14.1l8-1.9z"/>
+                </svg>
+                Beautify
+    
+			
+            </button>
+            <div style="flex: 1;"></div>
+            <button id="btnCopy" class="btn-secondary">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+                Copy
+    
+			
+            </button>
+            <button id="btnDownload" class="btn-secondary">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
+                </svg>
+                Download
+    
+			
+            </button>
+        </div>
+        <div class="workspace">
+            <div class="editor-box">
+                <div class="box-header">Source Code</div>
+                <!-- U editor-box (Source Code) neka bude OVAKO, bez duplog textarea -->
+                <div class="code-editor" id="codeEditor">
+                    <textarea id="source" spellcheck="false" placeholder=""></textarea>
+					<pre id="sourceOverlay" class="code-overlay"><code id="sourceHighlight" class="language-javascript"></code></pre>
+
+                </div>
+            </div>
+            <div class="editor-box">
+                <div class="box-header">
+                    Formatted Output
+            <span style="font-size: 10px; opacity: 0.6;">CHROMIUM ENGINE</span>
+                </div>
+                <pre class="code-output"><code id="outputCode" class="language-javascript"></code></pre>
+
+            </div>
+        </div>
+        <footer>
+            <div>
+                UI &amp;Concept &copy;2026 <strong>HeritEon</strong>
+            </div>
+            <div>
+                Engine provided by <strong>The Chromium Project</strong>
+                (BSD License)
+			
+            </div>
+        </footer>
+        <script src="./prism/prism.js"></script>
+        <script type="module">
+            import {FormatterWorker} from './devtools/bundled/entrypoints/formatter_worker/formatter_worker.js';
+            import*as acorn from './acorn/acorn.mjs';
+
+            const btn = document.getElementById('btnFormat');
+            const btnCopy = document.getElementById('btnCopy');
+            const btnDownload = document.getElementById('btnDownload');
+            const status = document.getElementById('status');
+
+            const codeEditor = document.getElementById('codeEditor');
+
+            const srcBox = document.getElementById('source');
+            const sourceOverlay = document.getElementById('sourceOverlay');
+            const sourceHighlight = document.getElementById('sourceHighlight');
+
+            const typeSelector = document.getElementById('typeSelector');
+            const indentSelector = document.getElementById('indentSelector');
+
+            const outputCode = document.getElementById('outputCode');
+            let lastFormatted = '';
+
+            function setStatus(text, color) {
+                status.innerText = text;
+                status.style.color = color || 'white';
+            }
+
+            function isJsSelection(uiMime) {
+                return uiMime === 'text/plain';
+            }
+
+            function engineMimeFor(uiMime) {
+                if (uiMime === 'text/plain')
+                    return 'text/javascript';
+                return uiMime;
+            }
+
+            function languageClassForUiMime(uiMime) {
+                if (uiMime === 'text/html')
+                    return 'language-markup';
+                if (uiMime === 'text/css')
+                    return 'language-css';
+                return 'language-javascript';
+            }
+
+            function updateSourceHighlight() {
+                const uiMime = typeSelector.value;
+                const langClass = languageClassForUiMime(uiMime);
+
+                sourceHighlight.className = langClass;
+
+                const val = srcBox.value || '';
+                const showHint = !val.trim();
+
+                sourceHighlight.textContent = showHint ? '// Paste your code here...' : val;
+                sourceHighlight.style.opacity = showHint ? '0.35' : '1';
+
+                if (window.Prism && Prism.highlightElement)
+                    Prism.highlightElement(sourceHighlight);
+            }
+
+            codeEditor.addEventListener('mousedown', () => srcBox.focus());
+
+            srcBox.addEventListener('scroll', () => {
+                sourceOverlay.scrollTop = srcBox.scrollTop;
+                sourceOverlay.scrollLeft = srcBox.scrollLeft;
+            }
+            );
+
+            srcBox.addEventListener('input', () => {
+                updateSourceHighlight();
+            }
+            );
+
+            typeSelector.addEventListener('change', () => {
+                updateSourceHighlight();
+                outputCode.className = languageClassForUiMime(typeSelector.value);
+                if (lastFormatted && window.Prism && Prism.highlightElement)
+                    Prism.highlightElement(outputCode);
+            }
+            );
+
+            function highlightPosition(textarea, line, column) {
+                if (!line || line < 1)
+                    return;
+
+                const lines = textarea.value.split('\n');
+                if (line > lines.length)
+                    return;
+
+                let pos = 0;
+                for (let i = 0; i < line - 1; i++)
+                    pos += lines[i].length + 1;
+
+                const currentLine = lines[line - 1] || '';
+                const col = Math.min(column || 0, currentLine.length);
+
+                const start = pos + col;
+                textarea.focus();
+                textarea.setSelectionRange(start, start + 1);
+
+                const approxLineHeight = 16;
+                textarea.scrollTop = (line - 1) * approxLineHeight;
+                sourceOverlay.scrollTop = textarea.scrollTop;
+            }
+
+            function validateSource(uiMime, source) {
+                if (!source.trim())
+                    return {
+                        error: new Error('Source is empty.'),
+                        line: null,
+                        column: null
+                    };
+
+                try {
+                    if (isJsSelection(uiMime)) {
+                        acorn.parse(source, {
+                            ecmaVersion: 'latest',
+                            locations: true
+                        });
+                        return {
+                            error: null,
+                            line: null,
+                            column: null
+                        };
+                    }
+
+                    if (uiMime === 'text/html') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(source, 'text/html');
+                        const parserError = doc.querySelector('parsererror');
+                        if (parserError)
+                            return {
+                                error: new Error(parserError.textContent || 'HTML parse error.'),
+                                line: null,
+                                column: null
+                            };
+                        return {
+                            error: null,
+                            line: null,
+                            column: null
+                        };
+                    }
+
+                    if (uiMime === 'text/css') {
+                        const sheet = new CSSStyleSheet();
+                        sheet.replaceSync(source);
+                        return {
+                            error: null,
+                            line: null,
+                            column: null
+                        };
+                    }
+
+                    return {
+                        error: null,
+                        line: null,
+                        column: null
+                    };
+                } catch (e) {
+                    const line = e.loc ? e.loc.line : null;
+                    const column = e.loc ? e.loc.column : null;
+                    return {
+                        error: e,
+                        line,
+                        column
+                    };
+                }
+            }
+
+            function applyOutputHighlight(formatted, uiMime) {
+                lastFormatted = String(formatted);
+                outputCode.className = languageClassForUiMime(uiMime);
+                outputCode.textContent = lastFormatted;
+                if (window.Prism && Prism.highlightElement)
+                    Prism.highlightElement(outputCode);
+            }
+
+            function fixJsSemicolonSplit(jsText) {
+                let s = String(jsText);
+                s = s.replace(/}\s*\r?\n[ \t]*;\s*(\r?\n)/g, '};$1');
+                s = s.replace(/}\s*\r?\n[ \t]*;\s*$/g, '};\n');
+                s = s.replace(/}\s*\r?\n\)\(\);\s*$/g, '})();\n');
+                return s;
+            }
+
+            function fixHtmlScriptBlocks(htmlText) {
+                const OPEN = '<scr' + 'ipt';
+                const CLOSE = '</scr' + 'ipt>';
+
+                const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const re = new RegExp(esc(OPEN) + '\\b([^>]*)>([\\s\\S]*?)' + esc(CLOSE),'gi');
+
+                return String(htmlText).replace(re, (m, attrs, body) => {
+                    if (/\bsrc\s*=/i.test(attrs))
+                        return m;
+                    if (/\btype\s*=\s*["']module["']/i.test(attrs))
+                        return m;
+                    if (/\btype\s*=\s*["']application\/(ld\+json|json)["']/i.test(attrs))
+                        return m;
+
+                    const fixed = fixJsSemicolonSplit(body);
+                    return OPEN + attrs + '>' + fixed + CLOSE;
+                }
+                );
+            }
+
+            function postFixByUiMime(uiMime, formatted) {
+                if (uiMime === 'text/html')
+                    return fixHtmlScriptBlocks(formatted);
+                if (uiMime === 'text/plain')
+                    return fixJsSemicolonSplit(formatted);
+                return String(formatted);
+            }
+
+            btn.addEventListener('click', () => {
+                const source = srcBox.value;
+                const uiMime = typeSelector.value;
+                const indent = indentSelector.value;
+
+                if (!source.trim()) {
+                    setStatus('Please paste code first', '#ff6b35');
+                    return;
                 }
 
-            } catch (e) {
-                console.error("Critical Error:", e);
-                output.value = "Engine Error: " + e.message;
+                const {error, line, column} = validateSource(uiMime, source);
+                if (error) {
+                    const message = error.message || error.toString();
+                    const lineInfo = line != null ? ` (line ${line}, column ${column})` : '';
+                    applyOutputHighlight(`Syntax / Parse error${lineInfo}:\n${message}`, 'text/plain');
+                    setStatus('Error in source code', '#ff3b3b');
+                    if (line != null)
+                        highlightPosition(srcBox, line, column);
+                    return;
+                }
+
+                setStatus('Processing...', '#ff6b35');
+
+                try {
+                    const engineMime = engineMimeFor(uiMime);
+                    const result = FormatterWorker.format(engineMime, source, indent);
+
+                    const handleResult = (res) => {
+                        const raw = (res && res.content) ? res.content : res;
+                        const formatted = postFixByUiMime(uiMime, raw);
+                        applyOutputHighlight(formatted, uiMime);
+                        setStatus('Done', '#4caf50');
+                    }
+                    ;
+
+                    if (result instanceof Promise) {
+                        result.then(handleResult).catch(err => {
+                            applyOutputHighlight('Error: ' + (err.message || err.toString()), 'text/plain');
+                            setStatus('Engine Error', '#ff3b3b');
+                        }
+                        );
+                    } else {
+                        handleResult(result);
+                    }
+                } catch (e) {
+                    applyOutputHighlight('Engine Error: ' + (e.message || e.toString()), 'text/plain');
+                    setStatus('Engine Error', '#ff3b3b');
+                }
             }
-        });
+            );
 
-        // --- EXPORT GLOBALNIH FUNKCIJA (jer je script type="module") ---
-        
-        window.copyOutput = function() {
-            const output = document.getElementById('output');
-            if(!output.value) return;
-            output.select();
-            document.execCommand('copy');
-            status.innerText = "Copied to Clipboard!";
-            setTimeout(() => status.innerText = "Ready", 2000);
-        };
+            btnCopy.addEventListener('click', () => {
+                if (!lastFormatted)
+                    return;
 
-        window.downloadOutput = function() {
-            const content = document.getElementById('output').value;
-            const type = document.getElementById('typeSelector').value;
-            if(!content) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(lastFormatted).then( () => {
+                        setStatus('Copied to Clipboard!', '#4caf50');
+                        setTimeout( () => setStatus('Ready', 'white'), 2000);
+                    }
+                    );
+                } else {
+                    const tmp = document.createElement('textarea');
+                    tmp.value = lastFormatted;
+                    document.body.appendChild(tmp);
+                    tmp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tmp);
+                    setStatus('Copied to Clipboard!', '#4caf50');
+                    setTimeout( () => setStatus('Ready', 'white'), 2000);
+                }
+            }
+            );
 
-            let ext = "txt";
-            if(type.includes("javascript")) ext = "js";
-            if(type.includes("html")) ext = "html";
-            if(type.includes("css")) ext = "css";
+            btnDownload.addEventListener('click', () => {
+                if (!lastFormatted)
+                    return;
 
-            const blob = new Blob([content], { type: "text/plain" });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `formatted_${Date.now()}.${ext}`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        };
-    </script>
-</body>
+                const uiMime = typeSelector.value;
+                let ext = 'txt';
+                if (isJsSelection(uiMime))
+                    ext = 'js';
+                if (uiMime === 'text/html')
+                    ext = 'html';
+                if (uiMime === 'text/css')
+                    ext = 'css';
+
+                const blob = new Blob([lastFormatted],{
+                    type: 'text/plain'
+                });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `formatted_${Date.now()}.${ext}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                setStatus('File downloaded', '#4caf50');
+                setTimeout( () => setStatus('Ready', 'white'), 2000);
+            }
+            );
+
+            updateSourceHighlight();
+        </script>
+    </body>
 </html>
